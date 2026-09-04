@@ -6,9 +6,6 @@ details, manage a cart, and complete a simple checkout flow.
 
 ## AI Workflow — Multi-Stage AI Workflow Across UX Types
 
-> **Revision note:** this README replaces an earlier version whose
-> workflow narrative did not match the repository. See "Correction" below.
-
 This project chains **two AI UX types** — chat and CLI — where the output
 of one stage is the literal input to the next, with the final stage
 enforced by an automated, CI-checked script rather than asserted in prose.
@@ -19,16 +16,6 @@ enforced by an automated, CI-checked script rather than asserted in prose.
 | 2 | CLI | Claude Code CLI | The spec from Stage 1 | Working Next.js app (`app/`, `components/`, `lib/`) |
 | 3 | CLI | Claude Code CLI (second, separate invocation) | The app from Stage 2 + Stage 1's non-functional requirements | Lint/test/build-clean codebase, checked by `workflow/03-cli-stage/verify.sh` and CI |
 
-### Correction from the previous submission
-
-The earlier README claimed Stage 2 used GitHub Copilot. That was
-inaccurate, and the repository itself contradicted it: `AGENTS.md` and
-`CLAUDE.md` are Claude Code CLI project-configuration files (`CLAUDE.md`
-imports `AGENTS.md` via Claude Code's `@`-import syntax) and only exist
-because a Claude Code CLI session actually built this app. This version
-names the tool that was actually used. See `workflow/README.md` for a
-full breakdown of what's genuine evidence versus reconstructed
-documentation.
 
 ### Workflow diagram
 
@@ -68,8 +55,8 @@ every push, so it can't silently regress again.
 ### Reproduce the full workflow
 
 ```bash
-git clone <repository-url>
-cd shop-ease
+git clone https://github.com/Latiah/Multi-Stage_AI_Workflow.git
+cd Multi-Stage_AI_Workflow
 npm install
 
 # Stage 3 check — the workflow's actual acceptance test
@@ -107,11 +94,3 @@ npm test
 Currently covers `cartReducer` (add/remove/increase/decrease/clear) with 5
 passing unit tests in `lib/__tests__/cart-reducer.test.ts`.
 
-## Lab Objective
-
-Demonstrate how the output of one AI UX type becomes the input to another,
-across at least two different UX categories (chat and CLI here), in a way
-that's adaptable to other providers (swap ChatGPT → Gemini, Claude Code
-CLI → Aider or Gemini CLI, without changing the shape of the pipeline) and
-reduces manual effort in a way that's measured — see
-`workflow/03-cli-stage/before-after-log.md` — rather than only claimed.
