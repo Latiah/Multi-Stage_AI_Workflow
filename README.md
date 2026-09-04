@@ -50,7 +50,7 @@ verifiably."
 ### Reproduce the full workflow
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Latiah/Multi-Stage_AI_Workflow.git
 cd shop-ease
 npm install
 
