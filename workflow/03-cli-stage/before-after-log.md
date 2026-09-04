@@ -1,8 +1,5 @@
 # Stage 3 — Before/After Log (real terminal output)
 
-This addresses the supervisor feedback directly: *"no screenshots, logs or
-test runs."* Everything below was actually run, not written from memory.
-The full raw transcript of the passing run is saved alongside this file as
 `verify_output_raw.log`.
 
 ## BEFORE (state handed off from Stage 2)
@@ -40,9 +37,6 @@ npm error missing script: test
 **Interpretation:** the app Stage 2 produced looked correct when viewed in
 a browser with an open internet connection, but did not meet Stage 1's
 own non-functional requirements, and had zero automated test coverage.
-This is exactly the "equally consistent with just building it and never
-verifying it" gap called out in feedback — the fix is to make verification
-a real, rerunnable artifact instead of an assertion.
 
 ## AFTER (Stage 3 fixes applied — see prompt.md)
 
