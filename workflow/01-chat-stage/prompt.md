@@ -25,3 +25,11 @@ in this exact structure:
 
 Output only the specification, in Markdown, no commentary.
 ```
+
+## Why this stage matters
+
+This is the step the original submission skipped documenting: the actual
+prompt and structured spec that were handed to the IDE stage. Without a
+persisted, versioned artifact here, the workflow isn't reproducible or
+adaptable — it's just "I chatted with something." The output of this stage
+(`spec-output.md`) is the literal input to Stage 2.

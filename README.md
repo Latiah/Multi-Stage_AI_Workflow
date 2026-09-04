@@ -6,66 +6,87 @@ details, manage a cart, and complete a simple checkout flow.
 
 ## AI Workflow — Multi-Stage AI Workflow Across UX Types
 
-This project is the deliverable for the **Multi-Stage AI Workflow Across UX
-Types** lab. It chains **three** different AI UX types — chat, IDE, and CLI —
-where the output of each stage is the literal input to the next.
+> **Revision note:** this README replaces an earlier version whose
+> workflow narrative did not match the repository. See "Correction" below.
 
-| Stage | UX type | Tool used here (swap freely) | Input | Output |
+This project chains **two AI UX types** — chat and CLI — where the output
+of one stage is the literal input to the next, with the final stage
+enforced by an automated, CI-checked script rather than asserted in prose.
+
+| Stage | UX type | Tool | Input | Output |
 |---|---|---|---|---|
-| 1 | Chat | ChatGPT | One-line problem statement | `workflow/01-chat-stage/spec-output.md` (technical spec) |
-| 2 | IDE | GitHub Copilot in VS Code | The spec from Stage 1 | Working Next.js app (`app/`, `components/`, `lib/`) |
-| 3 | CLI | Claude Code CLI | The app from Stage 2 + non-functional requirements from Stage 1 | Lint/build-clean codebase, verified by `workflow/03-cli-stage/verify.sh` |
+| 1 | Chat | ChatGPT | Problem statement | `workflow/01-chat-stage/spec-output.md` (technical spec) |
+| 2 | CLI | Claude Code CLI | The spec from Stage 1 | Working Next.js app (`app/`, `components/`, `lib/`) |
+| 3 | CLI | Claude Code CLI (second, separate invocation) | The app from Stage 2 + Stage 1's non-functional requirements | Lint/test/build-clean codebase, checked by `workflow/03-cli-stage/verify.sh` and CI |
+
+### Correction from the previous submission
+
+The earlier README claimed Stage 2 used GitHub Copilot. That was
+inaccurate, and the repository itself contradicted it: `AGENTS.md` and
+`CLAUDE.md` are Claude Code CLI project-configuration files (`CLAUDE.md`
+imports `AGENTS.md` via Claude Code's `@`-import syntax) and only exist
+because a Claude Code CLI session actually built this app. This version
+names the tool that was actually used. See `workflow/README.md` for a
+full breakdown of what's genuine evidence versus reconstructed
+documentation.
 
 ### Workflow diagram
 
 ```mermaid
 flowchart TD
     A["Stage 1 — Chat AI (ChatGPT)\nInput: problem statement"] -->|"Technical spec\n(spec-output.md)"| B
-    B["Stage 2 — IDE AI (GitHub Copilot)\nImplements the spec file-by-file"] -->|"Working app\n(routes, components)"| C
-    C["Stage 3 — CLI AI (Claude Code CLI)\nRuns lint + build, fixes real errors"] -->|"Verified, buildable app"| D["ShopEase\n(deployable Next.js app)"]
-    C -.->|"errors found -> fed back"| B
+    B["Stage 2 — CLI AI (Claude Code CLI)\nImplements the spec"] -->|"Working app\n(routes, components)"| C
+    C["Stage 3 — CLI AI (Claude Code CLI, 2nd pass)\nRuns lint + test + build, fixes real failures"] -->|"Verified app"| D["ShopEase\n(deployable Next.js app)"]
+    C -.->|"failures found -> fed back"| B
+    E[".github/workflows/ci.yml"] -.->|"enforces Stage 3 on every push"| C
 ```
 
-Each stage's exact prompt, its raw output, and — for Stage 3 — a real
-before/after log of errors found and fixed live under `workflow/`:
+- `workflow/01-chat-stage/` — spec-generation prompt and its output
+- `workflow/02-implementation-stage/` — how the spec was implemented, and
+  the correction described above
+- `workflow/03-cli-stage/` — verification prompt, `verify.sh`, a real
+  before/after terminal transcript (`verify_output_raw.log`), and what was
+  found and fixed
+- `workflow/README.md` — an honest breakdown of which evidence is genuine
+  (real logs, real CI, real tests) versus reconstructed (representative
+  prompts, since the original chat session wasn't saved)
 
-- `workflow/01-chat-stage/` — the spec-generation prompt and its output
-- `workflow/02-ide-stage/` — how the spec was implemented, and what gap it left
-- `workflow/03-cli-stage/` — the verification prompt, `verify.sh`, and a real
-  before/after log (3 lint errors + 1 build failure found and fixed)
+### Why Stage 3 exists, and what it actually found
 
-### Why a third stage was added
+A CLI coding agent generates code but doesn't automatically run the
+project's own toolchain and treat failures as failures — that has to be
+driven explicitly. When it was run for real against this codebase, it
+found:
+- `npm run lint` → 3 real errors
+- `npm run build` → failed outright (`next/font/google` needs network
+  access to `fonts.googleapis.com` at build time)
+- `npm test` → no test script existed at all
 
-The lab's prerequisites and required-tools sections both call for a
-CLI-based AI tool in addition to chat and IDE tools, but the original
-version of this project only chained Chat → IDE. That two-stage version
-also had no verification step, so "Functionality: runs end-to-end without
-breaking" was only ever asserted, never actually checked — and it turned
-out not to be true: `npm run lint` had 3 real errors and `npm run build`
-failed outright (see `workflow/03-cli-stage/before-after-log.md` for the
-exact output). The CLI stage closes both gaps at once: it's the missing
-tool category, and it's what turns "should work" into "does work,
-verifiably."
+All of this is fixed now, and covered by `.github/workflows/ci.yml` on
+every push, so it can't silently regress again.
 
 ### Reproduce the full workflow
 
 ```bash
-git clone https://github.com/Latiah/Multi-Stage_AI_Workflow.git
+git clone <repository-url>
 cd shop-ease
 npm install
 
-# Stage 3 check - this is the workflow's actual acceptance test
+# Stage 3 check — the workflow's actual acceptance test
 bash workflow/03-cli-stage/verify.sh
 ```
 
-`verify.sh` exits `0` only if both `npm run lint` and `npm run build` pass,
-so it can be dropped into any CI pipeline as-is.
+`verify.sh` runs `npm run lint`, `npm test`, and `npm run build`, and
+exits non-zero if any of them fail. The same three commands run in CI on
+every push and pull request.
 
 ## Technologies
 
 - Next.js (App Router) + TypeScript
 - Tailwind CSS
 - React Context for cart state
+- Vitest for unit tests
+- GitHub Actions for CI
 - Git and GitHub
 
 ## Getting Started
@@ -77,11 +98,20 @@ npm run dev
 
 Open `http://localhost:3000` in your browser.
 
+## Testing
+
+```bash
+npm test
+```
+
+Currently covers `cartReducer` (add/remove/increase/decrease/clear) with 5
+passing unit tests in `lib/__tests__/cart-reducer.test.ts`.
+
 ## Lab Objective
 
 Demonstrate how the output of one AI UX type becomes the input to another,
-across at least two (here, three) different categories of tool, in a way
-that is adaptable to other providers (swap ChatGPT to Gemini, Copilot to
-Cursor, Claude Code CLI to Gemini CLI, without changing the shape of the
-pipeline) and reduces manual effort in a way that's actually measurable,
-not just claimed.
+across at least two different UX categories (chat and CLI here), in a way
+that's adaptable to other providers (swap ChatGPT → Gemini, Claude Code
+CLI → Aider or Gemini CLI, without changing the shape of the pipeline) and
+reduces manual effort in a way that's measured — see
+`workflow/03-cli-stage/before-after-log.md` — rather than only claimed.

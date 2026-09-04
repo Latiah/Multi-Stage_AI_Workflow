@@ -20,6 +20,16 @@ else
 fi
 
 echo
+echo "-- npm test --"
+if npm test; then
+  echo "PASS: tests"
+  TEST_OK=1
+else
+  echo "FAIL: tests"
+  TEST_OK=0
+fi
+
+echo
 echo "-- npm run build --"
 if npm run build; then
   echo "PASS: build"
@@ -30,8 +40,8 @@ else
 fi
 
 echo
-if [[ "$LINT_OK" -eq 1 && "$BUILD_OK" -eq 1 ]]; then
-  echo "RESULT: workflow requirement satisfied (lint + build both clean)."
+if [[ "$LINT_OK" -eq 1 && "$TEST_OK" -eq 1 && "$BUILD_OK" -eq 1 ]]; then
+  echo "RESULT: workflow requirement satisfied (lint + tests + build all clean)."
   exit 0
 else
   echo "RESULT: workflow requirement NOT satisfied — see failures above."

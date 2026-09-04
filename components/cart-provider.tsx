@@ -30,7 +30,7 @@ type CartContextValue = {
 
 const initialState: CartState = { items: [] };
 
-function cartReducer(state: CartState, action: CartAction): CartState {
+export function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case "LOAD_CART":
       return { items: action.payload };

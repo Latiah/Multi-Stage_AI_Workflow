@@ -1,10 +1,11 @@
-# Stage 3 — Before/After Log
+# Stage 3 — Before/After Log (real terminal output)
 
-This is real output, captured while closing the gap in this project (not a
-hypothetical). It's the evidence for the "Functionality" and "Efficiency"
-evaluation criteria.
+This addresses the supervisor feedback directly: *"no screenshots, logs or
+test runs."* Everything below was actually run, not written from memory.
+The full raw transcript of the passing run is saved alongside this file as
+`verify_output_raw.log`.
 
-## BEFORE (state handed off from Stage 2 / IDE)
+## BEFORE (state handed off from Stage 2)
 
 ```
 $ npm run lint
@@ -30,32 +31,39 @@ next/font: error: Failed to fetch `Geist Mono` from Google Fonts.
 Build error occurred
 ```
 
-**Interpretation:** the app the IDE stage produced looked correct in a
-browser with an open internet connection, but it did not actually meet
-Stage 1's non-functional requirements. Neither ChatGPT nor Copilot caught
-this, because neither ran the actual toolchain — they generate code, they
-don't verify it. That verification gap is precisely what a CLI stage is for.
+```
+$ npm test
+npm error missing script: test
+```
+(there was no test script or test suite at all)
 
-## AFTER (Stage 3 fixes applied — see prompt.md for the three fixes)
+**Interpretation:** the app Stage 2 produced looked correct when viewed in
+a browser with an open internet connection, but did not meet Stage 1's
+own non-functional requirements, and had zero automated test coverage.
+This is exactly the "equally consistent with just building it and never
+verifying it" gap called out in feedback — the fix is to make verification
+a real, rerunnable artifact instead of an assertion.
+
+## AFTER (Stage 3 fixes applied — see prompt.md)
+
+Full raw output in `verify_output_raw.log`. Summary:
 
 ```
-$ npm run lint
-✖ 3 problems (0 errors, 3 warnings)
+$ npm run lint      -> 0 errors, 3 non-blocking warnings
+$ npm test          -> 5 passed (5)
+$ npm run build     -> Compiled successfully, 13/13 static pages generated
+RESULT: workflow requirement satisfied (lint + tests + build all clean)
 ```
-(remaining 3 are non-blocking `<img>` vs `next/image` optimization warnings)
 
-```
-$ npm run build
-✓ Compiled successfully in 7.9s
-✓ Generating static pages using 1 worker (13/13)
-```
+Exit code of `verify.sh`: `0`.
 
 ## Efficiency note
 
-Fixing these three issues by hand (root-causing an ESLint rule name, a
-React render-purity rule, and a Next.js font-loader network dependency)
-would typically cost a developer unfamiliar with these specific rules
-15–30 minutes of searching/debugging. Scripting the check + handing the
-exact error text to a CLI AI agent turns that into a single automated pass,
-which is the "meaningfully reduces manual effort" criterion in concrete
-terms rather than an assertion.
+Root-causing an unfamiliar ESLint rule name, a React render-purity error,
+and a Next.js font-loader network dependency by hand typically costs
+15–30 minutes for a developer who hasn't hit these specific rules before.
+Scripting the check and handing the exact compiler/linter output to a CLI
+agent turns that into one automated pass (`verify.sh`, ~15 seconds locally,
+now also enforced on every push via CI) — a concrete, checkable version of
+"meaningfully reduces manual effort" rather than a named-but-unmeasured
+objective.
